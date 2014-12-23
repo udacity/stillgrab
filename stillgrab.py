@@ -17,11 +17,13 @@ def stillname(moviename, extension='.jpg'):
   (basename, _) = os.path.splitext(moviename)
   return basename + extension
 
-def extract(moviepath, stillpath):
+def extract(moviepath, stillpath, ver):
   '''Run avconv on a movie, extracting last frame into a still.'''
   cmdline = ['avconv', '-noaccurate_seek', '-ss', '999999', '-i', moviepath,
              '-frames', '1', stillpath]
-  print cmdline
+  if ver.startswith('0'):
+    # Old avconv version, doesn't do accurate seek
+    cmdline.remove('-noaccurate_seek')
   ps = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   ret = ps.wait()
   if ret != 0:
@@ -31,18 +33,23 @@ def extract(moviepath, stillpath):
     sys.exit(1)
 
 def checkavconv():
-  '''If avconv isn't installed, bail out.'''
+  '''If avconv isn't installed, bail out.  Otherwise, return its version.'''
   try:
-    ret = subprocess.call(['avconv', '-version'], stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
+    ps = subprocess.call(['avconv', '-version'], stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    ret = ps.wait()
   except OSError:
     print 'avconv is not installed or not in your PATH.'
     sys.exit(1)
   if ret != 0:
     print 'avconv is installed but broken.'
     sys.exit(1)
+  firstline = ps.stdout.readline().strip()
+  if not firstline.startswith('avconv '):
+    print 'Couldn\'t parse avconv version!'
+  return firstline[7:]  
 
-def extractall(directory):
+def extractall(directory, ver):
   '''Extract a still for each movie in directory.'''
   movies = filter(ismovie, os.listdir(directory))
   for fname in movies:
@@ -53,13 +60,13 @@ def extractall(directory):
       print "%s exists; skipping." % sname
       continue
     print fname,
-    extract(moviepath, stillpath)
+    extract(moviepath, stillpath, ver)
     print sname
 
 if __name__ == '__main__':
   if len(sys.argv) != 2:
     print 'Usage:  stillgrab.py directory'
     sys.exit(1)
-  checkavconv()
-  extractall(sys.argv[-1])
+  ver = checkavconv()
+  extractall(sys.argv[-1], ver)
 
