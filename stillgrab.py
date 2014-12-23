@@ -35,8 +35,8 @@ def extract(moviepath, stillpath, ver):
 def checkavconv():
   '''If avconv isn't installed, bail out.  Otherwise, return its version.'''
   try:
-    ps = subprocess.call(['avconv', '-version'], stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+    ps = subprocess.Popen(['avconv', '-version'], stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
     ret = ps.wait()
   except OSError:
     print 'avconv is not installed or not in your PATH.'
