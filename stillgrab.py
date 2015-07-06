@@ -6,9 +6,11 @@ import os
 import sys
 import subprocess
 import argparse
+import re
 
 movietypes = ['.mp4']
 DEFAULT_FRAME_EXTENSION = '.png'
+QUIZ_RE = re.compile("_q_")
 
 def ismovie(filename):
   (_, ext) = os.path.splitext(filename)
@@ -51,15 +53,18 @@ def checkavconv():
     print 'Couldn\'t parse avconv version!'
   return firstline[7:]
 
-def extractall(directory, ver):
+def extractall(directory, ver, all, overwrite):
   '''Extract a still for each movie in directory.'''
   movies = filter(ismovie, os.listdir(directory))
   for fname in movies:
+    if QUIZ_RE.search(fname) is None and not all:
+      print fname, "is not a quiz, and we're not in --all mode. Skipping"
+      continue
     moviepath = os.path.join(directory, fname)
     sname = stillname(fname)
     stillpath = os.path.join(directory, sname)
-    if os.path.exists(stillpath):
-      print "%s exists; skipping." % sname
+    if os.path.exists(stillpath) and not overwrite:
+      print sname,"exists; skipping. Usee --overwrite to overwrite."
       continue
     print fname,
     extract(moviepath, stillpath, ver)
@@ -68,7 +73,10 @@ def extractall(directory, ver):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument("directory", help="Directory of videos to process")
-  parser.add_argument("-a","--all", help="Process all videos, not just quizzes")
+  parser.add_argument("-a","--all", help="Process all videos, not just quizzes",
+                    action="store_true")
+  parser.add_argument("-o","--overwrite", help="Overwrite existing framegrabs",
+                      action="store_true")
   args = parser.parse_args()
   ver = checkavconv()
-  extractall(args.directory, ver)
+  extractall(args.directory, ver, args.all, args.overwrite)
