@@ -64,7 +64,7 @@ def extractall(directory, ver, all, overwrite):
     sname = stillname(fname)
     stillpath = os.path.join(directory, sname)
     if os.path.exists(stillpath) and not overwrite:
-      print sname,"exists; skipping. Usee --overwrite to overwrite."
+      print sname, "exists; skipping. Use --overwrite to overwrite."
       continue
     print fname,
     extract(moviepath, stillpath, ver)
