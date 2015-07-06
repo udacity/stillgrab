@@ -7,12 +7,13 @@ import sys
 import subprocess
 
 movietypes = ['.mp4']
+DEFAULT_FRAME_EXTENSION = '.png'
 
 def ismovie(filename):
   (_, ext) = os.path.splitext(filename)
   return ext in movietypes
 
-def stillname(moviename, extension='.jpg'):
+def stillname(moviename, extension=DEFAULT_FRAME_EXTENSION):
   '''Make a filename for a still, based on a movie filename.'''
   (basename, _) = os.path.splitext(moviename)
   return basename + extension
