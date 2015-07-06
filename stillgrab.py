@@ -6,11 +6,9 @@ import os
 import sys
 import subprocess
 import argparse
-import re
 
 movietypes = ['.mp4']
 DEFAULT_FRAME_EXTENSION = '.png'
-QUIZ_RE = re.compile("_q_")
 
 def ismovie(filename):
   (_, ext) = os.path.splitext(filename)
@@ -53,11 +51,11 @@ def checkavconv():
     print 'Couldn\'t parse avconv version!'
   return firstline[7:]
 
-def extractall(directory, ver, all, overwrite):
+def extractall(directory, ver, allmode, overwrite):
   '''Extract a still for each movie in directory.'''
   movies = filter(ismovie, os.listdir(directory))
   for fname in movies:
-    if QUIZ_RE.search(fname) is None and not all:
+    if "_q_" not in fname None and not allmode:
       print fname, "is not a quiz, and we're not in --all mode. Skipping"
       continue
     moviepath = os.path.join(directory, fname)
