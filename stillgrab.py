@@ -5,6 +5,7 @@
 import os
 import sys
 import subprocess
+import argparse
 
 movietypes = ['.mp4']
 DEFAULT_FRAME_EXTENSION = '.png'
@@ -48,7 +49,7 @@ def checkavconv():
   firstline = ps.stdout.readline().strip()
   if not firstline.startswith('avconv '):
     print 'Couldn\'t parse avconv version!'
-  return firstline[7:]  
+  return firstline[7:]
 
 def extractall(directory, ver):
   '''Extract a still for each movie in directory.'''
@@ -65,9 +66,9 @@ def extractall(directory, ver):
     print sname
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
-    print 'Usage:  stillgrab.py directory'
-    sys.exit(1)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("directory", help="Directory of videos to process")
+  parser.add_argument("-a","--all", help="Process all videos, not just quizzes")
+  args = parser.parse_args()
   ver = checkavconv()
-  extractall(sys.argv[-1], ver)
-
+  extractall(args.directory, ver)
