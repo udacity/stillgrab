@@ -9,6 +9,7 @@ import argparse
 
 movietypes = ['.mp4']
 DEFAULT_FRAME_EXTENSION = '.png'
+QUIZ_PATTERN = "_q_"
 
 def ismovie(filename):
   (_, ext) = os.path.splitext(filename)
@@ -55,7 +56,7 @@ def extractall(directory, ver, allmode, overwrite):
   '''Extract a still for each movie in directory.'''
   movies = filter(ismovie, os.listdir(directory))
   for fname in movies:
-    if "_q_" not in fname None and not allmode:
+    if QUIZ_PATTERN not in fname and not allmode:
       print fname, "is not a quiz, and we're not in --all mode. Skipping"
       continue
     moviepath = os.path.join(directory, fname)
