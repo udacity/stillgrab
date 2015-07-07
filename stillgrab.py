@@ -5,14 +5,17 @@
 import os
 import sys
 import subprocess
+import argparse
 
 movietypes = ['.mp4']
+DEFAULT_FRAME_EXTENSION = '.png'
+QUIZ_PATTERN = "_q_"
 
 def ismovie(filename):
   (_, ext) = os.path.splitext(filename)
   return ext in movietypes
 
-def stillname(moviename, extension='.jpg'):
+def stillname(moviename, extension=DEFAULT_FRAME_EXTENSION):
   '''Make a filename for a still, based on a movie filename.'''
   (basename, _) = os.path.splitext(moviename)
   return basename + extension
@@ -47,26 +50,32 @@ def checkavconv():
   firstline = ps.stdout.readline().strip()
   if not firstline.startswith('avconv '):
     print 'Couldn\'t parse avconv version!'
-  return firstline[7:]  
+  return firstline[7:]
 
-def extractall(directory, ver):
+def extractall(directory, ver, allmode, overwrite):
   '''Extract a still for each movie in directory.'''
   movies = filter(ismovie, os.listdir(directory))
   for fname in movies:
+    if QUIZ_PATTERN not in fname and not allmode:
+      print fname, "is not a quiz, and we're not in --all mode. Skipping"
+      continue
     moviepath = os.path.join(directory, fname)
     sname = stillname(fname)
     stillpath = os.path.join(directory, sname)
-    if os.path.exists(stillpath):
-      print "%s exists; skipping." % sname
+    if os.path.exists(stillpath) and not overwrite:
+      print sname, "exists; skipping. Use --overwrite to overwrite."
       continue
     print fname,
     extract(moviepath, stillpath, ver)
     print sname
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
-    print 'Usage:  stillgrab.py directory'
-    sys.exit(1)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("directory", help="Directory of videos to process")
+  parser.add_argument("-a","--all", help="Process all videos, not just quizzes",
+                    action="store_true")
+  parser.add_argument("-o","--overwrite", help="Overwrite existing framegrabs",
+                      action="store_true")
+  args = parser.parse_args()
   ver = checkavconv()
-  extractall(sys.argv[-1], ver)
-
+  extractall(args.directory, ver, args.all, args.overwrite)
